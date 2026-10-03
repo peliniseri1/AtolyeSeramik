@@ -1,0 +1,15 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local tool state
+.impeccable/
+.claude/settings.local.json
+
+# Secrets and OS clutter
+.env
+.env.*
+*.log
+Thumbs.db
+desktop.ini
+.DS_Store
