@@ -1,9 +1,14 @@
 // Contact settings: replace before launch.
+// The real WhatsApp number lives in atolye-app/.env.local as VITE_WHATSAPP, which is never committed.
+const SAMPLE_WHATSAPP = '905000000000'
+
 export const CONFIG = {
-  whatsapp: '905000000000', // international format, digits only
+  whatsapp: import.meta.env.VITE_WHATSAPP || SAMPLE_WHATSAPP, // international format, digits only
   email: 'atelier@example.com',
   n8nWebhook: '', // later: your n8n webhook URL; when set, every request is also POSTed there
 }
+
+export const isSampleWhatsapp = CONFIG.whatsapp === SAMPLE_WHATSAPP
 
 export const whatsappLink = (text) =>
   `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`

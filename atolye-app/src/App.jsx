@@ -6,6 +6,7 @@ import { sendRequest } from './lib/contact.js'
 import AppBar from './components/AppBar.jsx'
 import TabBar from './components/TabBar.jsx'
 import EnquirySheet from './components/EnquirySheet.jsx'
+import CatalogueQR from './components/CatalogueQR.jsx'
 import CollectionScreen from './screens/CollectionScreen.jsx'
 import CommissionScreen from './screens/CommissionScreen.jsx'
 import SavedScreen from './screens/SavedScreen.jsx'
@@ -69,6 +70,7 @@ export default function App() {
             <TabBar current={tab} onChange={setTab} badge={favourites.length} />
             <EnquirySheet product={enquiry} onSend={sendEnquiry} onClose={closeEnquiry} />
           </div>
+          <CatalogueQR aside />
         </div>
       </StoreContext.Provider>
     </LangContext.Provider>
