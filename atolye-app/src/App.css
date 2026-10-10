@@ -176,6 +176,7 @@
   font-weight: 500;
 }
 .ghost:active { background: color-mix(in srgb, var(--clay-ink) 8%, transparent); }
+.ghost:disabled { opacity: .35; cursor: not-allowed; }
 .text-button {
   min-height: 44px; padding: 0 4px; background: none; border: 0;
   font-weight: 500; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .3em;
@@ -280,6 +281,22 @@
 .quiz-done { display: grid; gap: 12px; }
 .quiz-done .quiz__question { margin-bottom: 0; }
 .pencil-note { font: 500 1.2rem/1.25 var(--pencil); color: var(--clay-ink); }
+
+/* KVKK notice and consent, between the summary and the send buttons */
+.kvkk { border-top: 1px solid color-mix(in srgb, var(--clay-ink) 35%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--clay-ink) 35%, transparent); }
+.kvkk summary {
+  display: flex; align-items: center; min-height: 48px; cursor: pointer;
+  font: 600 .75rem/1.2 var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--clay-ink);
+}
+.kvkk summary:focus-visible { outline: 2px solid var(--clay-ink); outline-offset: 3px; }
+.kvkk__body { max-height: 16rem; overflow-y: auto; padding-bottom: 1rem; font-size: .85rem; line-height: 1.6; color: var(--graphite); }
+.kvkk__body div + div { margin-top: .75rem; }
+.kvkk__body dt { font-weight: 600; color: var(--clay-ink); }
+.kvkk__body dd { margin: .15rem 0 0; }
+.consent { display: flex; align-items: flex-start; gap: .75rem; font-size: .88rem; line-height: 1.55; color: var(--clay-ink); cursor: pointer; }
+.consent input { flex: none; width: 22px; height: 22px; margin: .1rem 0 0; accent-color: var(--clay-ink); cursor: pointer; }
+.consent input:focus-visible { outline: 2px solid var(--clay-ink); outline-offset: 3px; }
+.consent__hint { font-size: .82rem; color: var(--graphite); }
 
 /* ---------- saved ---------- */
 .saved { padding-bottom: 32px; }

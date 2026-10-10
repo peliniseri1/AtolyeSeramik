@@ -87,7 +87,7 @@ Done means: both `tr` and `en` render, it looks right at 375 px, and `npm run li
 | `kind` | Extra fields in `payload` |
 |---|---|
 | `enquiry` | `code` (piece code, e.g. `"H-01"`) |
-| `commission` | `code` (`"K-<n>"`), `piece`, `motif`, `mood`, `occasion`, `when`, `note`, `name`, `contact` |
+| `commission` | `code` (`"K-<n>"`), `piece`, `motif`, `mood`, `occasion`, `when`, `note`, `name`, `contact`, `kvkkConsent` (always `true`: the form cannot send without KVKK consent) |
 | `visit` | `slot`, `name` |
 
 ### Rules

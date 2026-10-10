@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLang } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
-import { sendRequest } from '../lib/contact.js'
+import { CONFIG, sendRequest } from '../lib/contact.js'
 import CommissionTile from '../components/CommissionTile.jsx'
 
 const L = (tr, en) => ({ tr, en })
@@ -77,6 +77,7 @@ export default function CommissionScreen() {
   const [showError, setShowError] = useState(false)
   const [done, setDone] = useState(false)
   const [sent, setSent] = useState(false)
+  const [consent, setConsent] = useState(false)
 
   const step = steps[index]
   const optionOf = (name) => steps.find((s) => s.name === name).options.find((o) => o.value === answers[name])
@@ -105,13 +106,14 @@ export default function CommissionScreen() {
   ].join('\n')
 
   const send = (channel) => {
-    sendRequest({ channel, subject: `${t.commissionHeading} · K-${code}`, text: summary(), payload: { kind: 'commission', code: `K-${code}`, lang, ...answers } })
+    if (!consent) return // KVKK: nothing leaves the page without explicit consent
+    sendRequest({ channel, subject: `${t.commissionHeading} · K-${code}`, text: summary(), payload: { kind: 'commission', code: `K-${code}`, lang, ...answers, kvkkConsent: true } })
     addRequest({ kind: 'commission', title: `K-${code} · ${labelOf('piece')}`, glaze: glaze ?? 'kintsugi' })
     setSent(true)
   }
 
   const restart = () => {
-    setAnswers(empty); setCode(null); setIndex(0); setDone(false); setSent(false); setShowError(false)
+    setAnswers(empty); setCode(null); setIndex(0); setDone(false); setSent(false); setShowError(false); setConsent(false)
   }
 
   return (
@@ -179,8 +181,27 @@ export default function CommissionScreen() {
           <div className="quiz-done">
             <h2 className="quiz__question">{t.readyTitle}</h2>
             <p>{t.readyNote}</p>
-            <button type="button" className="stamp stamp--wide" onClick={() => send('whatsapp')}>{t.sendWhatsapp}</button>
-            <button type="button" className="ghost ghost--wide" onClick={() => send('email')}>{t.sendEmail}</button>
+
+            <details className="kvkk">
+              <summary>{t.kvkkTitle}</summary>
+              <dl className="kvkk__body">
+                {t.kvkkBody(CONFIG.email).map(([term, text]) => (
+                  <div key={term}>
+                    <dt>{term}</dt>
+                    <dd>{text}</dd>
+                  </div>
+                ))}
+              </dl>
+            </details>
+            <label className="consent">
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
+                aria-describedby={consent ? undefined : 'kvkk-required'} />
+              <span>{t.kvkkConsent}</span>
+            </label>
+            {!consent && <p id="kvkk-required" className="consent__hint">{t.kvkkRequired}</p>}
+
+            <button type="button" className="stamp stamp--wide" disabled={!consent} onClick={() => send('whatsapp')}>{t.sendWhatsapp}</button>
+            <button type="button" className="ghost ghost--wide" disabled={!consent} onClick={() => send('email')}>{t.sendEmail}</button>
             {sent && (
               <>
                 <p className="pencil-note" role="status">{t.sentNote}</p>
