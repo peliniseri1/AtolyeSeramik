@@ -282,7 +282,9 @@
 .quiz-done .quiz__question { margin-bottom: 0; }
 .pencil-note { font: 500 1.2rem/1.25 var(--pencil); color: var(--clay-ink); }
 
-/* KVKK notice and consent, between the summary and the send buttons */
+/* KVKK notice and consent, between a form and its send buttons */
+.kvkk-consent { display: grid; gap: 12px; }
+.visit .kvkk-consent { margin: 1.25rem 0 12px; }
 .kvkk { border-top: 1px solid color-mix(in srgb, var(--clay-ink) 35%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--clay-ink) 35%, transparent); }
 .kvkk summary {
   display: flex; align-items: center; min-height: 48px; cursor: pointer;

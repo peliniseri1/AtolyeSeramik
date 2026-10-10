@@ -2,18 +2,23 @@ import { useState } from 'react'
 import { promises, useLang } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
 import { sendRequest } from '../lib/contact.js'
+import { LIMITS, cleanText } from '../lib/sanitize.js'
 import ProductImage from '../components/ProductImage.jsx'
+import KvkkConsent from '../components/KvkkConsent.jsx'
 
 export default function AtelierScreen() {
   const { lang, t } = useLang()
   const { addRequest } = useStore()
   const [when, setWhen] = useState(0)
   const [name, setName] = useState('')
+  const [consent, setConsent] = useState(false)
   const [sent, setSent] = useState(false)
+  const cleanName = cleanText(name, LIMITS.name)
 
   const book = () => {
+    if (!consent || !cleanName || sent) return // KVKK consent, a name, and one request per visit
     const slot = t.visitOptions[when]
-    sendRequest({ channel: 'whatsapp', subject: t.visitTitle, text: t.visitMsg(slot, name.trim()), payload: { kind: 'visit', lang, slot, name } })
+    sendRequest({ channel: 'whatsapp', subject: t.visitTitle, text: t.visitMsg(slot, cleanName), payload: { kind: 'visit', lang, slot, name: cleanName, kvkkConsent: true } })
     addRequest({ kind: 'visit', title: `${t.visitTitle} · ${slot}`, glaze: 'tenmoku' })
     setSent(true)
   }
@@ -59,9 +64,10 @@ export default function AtelierScreen() {
           </fieldset>
           <label className="field">
             <span>{t.yourName}</span>
-            <input type="text" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+            <input type="text" autoComplete="name" value={name} maxLength={LIMITS.name} onChange={(e) => setName(e.target.value)} />
           </label>
-          <button type="button" className="stamp stamp--wide" onClick={book}>{t.visitSend}</button>
+          <KvkkConsent checked={consent} onChange={setConsent} />
+          <button type="button" className="stamp stamp--wide" disabled={!consent || !cleanName || sent} onClick={book}>{t.visitSend}</button>
           {sent && <p className="pencil-note" role="status">{t.sentNote}</p>}
         </section>
       </div>

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useLang } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
-import { CONFIG, sendRequest } from '../lib/contact.js'
+import { sendRequest } from '../lib/contact.js'
+import { LIMITS, cleanText, isContact } from '../lib/sanitize.js'
 import CommissionTile from '../components/CommissionTile.jsx'
+import KvkkConsent from '../components/KvkkConsent.jsx'
 
 const L = (tr, en) => ({ tr, en })
 
@@ -83,7 +85,15 @@ export default function CommissionScreen() {
   const optionOf = (name) => steps.find((s) => s.name === name).options.find((o) => o.value === answers[name])
   const labelOf = (name) => optionOf(name)?.label[lang] ?? ''
   const glaze = optionOf('mood')?.glaze
-  const contactMissing = !answers.name.trim() || !answers.contact.trim()
+  // what actually leaves the page: free text cleaned, choices only from the option lists
+  const clean = {
+    ...Object.fromEntries(steps.map((s) => [s.name, optionOf(s.name)?.value ?? ''])),
+    note: cleanText(answers.note, LIMITS.note, { multiline: true }),
+    name: cleanText(answers.name, LIMITS.name),
+    contact: cleanText(answers.contact, LIMITS.contact),
+  }
+  const nameMissing = !clean.name
+  const contactInvalid = !isContact(clean.contact)
 
   const choose = (name, value) => {
     if (!code) setCode(newTileCode())
@@ -92,22 +102,22 @@ export default function CommissionScreen() {
 
   const next = () => {
     if (index < steps.length - 1) return setIndex(index + 1)
-    if (contactMissing) return setShowError(true)
+    if (nameMissing || contactInvalid) return setShowError(true)
     setDone(true)
   }
 
   const summary = () => [
     `${t.commissionHeading} · K-${code}`,
     `${steps[0].question[lang]} ${labelOf('piece')}`,
-    `${steps[1].question[lang]} ${labelOf('motif')}${answers.note ? ' · ' + answers.note : ''}`,
+    `${steps[1].question[lang]} ${labelOf('motif')}${clean.note ? ' · ' + clean.note : ''}`,
     `${steps[2].question[lang]} ${labelOf('mood')}`,
     `${steps[3].question[lang]} ${labelOf('occasion')}`,
-    `${labelOf('when')} · ${answers.name} · ${answers.contact}`,
+    `${labelOf('when')} · ${clean.name} · ${clean.contact}`,
   ].join('\n')
 
   const send = (channel) => {
-    if (!consent) return // KVKK: nothing leaves the page without explicit consent
-    sendRequest({ channel, subject: `${t.commissionHeading} · K-${code}`, text: summary(), payload: { kind: 'commission', code: `K-${code}`, lang, ...answers, kvkkConsent: true } })
+    if (!consent || sent) return // KVKK: nothing leaves without consent; and only once per tile
+    sendRequest({ channel, subject: `${t.commissionHeading} · K-${code}`, text: summary(), payload: { kind: 'commission', code: `K-${code}`, lang, ...clean, kvkkConsent: true } })
     addRequest({ kind: 'commission', title: `K-${code} · ${labelOf('piece')}`, glaze: glaze ?? 'kintsugi' })
     setSent(true)
   }
@@ -146,7 +156,7 @@ export default function CommissionScreen() {
               {step.note && (
                 <label className="field">
                   <span>{t.optional}</span>
-                  <textarea rows={3} value={answers.note} placeholder={t.notePlaceholder}
+                  <textarea rows={3} value={answers.note} placeholder={t.notePlaceholder} maxLength={LIMITS.note}
                     onChange={(e) => setAnswers((a) => ({ ...a, note: e.target.value }))} />
                 </label>
               )}
@@ -155,17 +165,17 @@ export default function CommissionScreen() {
                 <>
                   <label className="field">
                     <span>{t.yourName}</span>
-                    <input type="text" autoComplete="name" value={answers.name}
-                      aria-invalid={showError && !answers.name.trim()}
+                    <input type="text" autoComplete="name" value={answers.name} maxLength={LIMITS.name}
+                      aria-invalid={showError && nameMissing}
                       onChange={(e) => setAnswers((a) => ({ ...a, name: e.target.value }))} />
                   </label>
                   <label className="field">
                     <span>{t.contact}</span>
-                    <input type="text" autoComplete="email" value={answers.contact}
-                      aria-invalid={showError && !answers.contact.trim()}
+                    <input type="text" autoComplete="email" value={answers.contact} maxLength={LIMITS.contact}
+                      aria-invalid={showError && contactInvalid}
                       onChange={(e) => setAnswers((a) => ({ ...a, contact: e.target.value }))} />
                   </label>
-                  {showError && contactMissing && <p className="field-error" role="alert">{t.contactError}</p>}
+                  {showError && (nameMissing || contactInvalid) && <p className="field-error" role="alert">{t.contactError}</p>}
                 </>
               )}
             </fieldset>
@@ -182,26 +192,10 @@ export default function CommissionScreen() {
             <h2 className="quiz__question">{t.readyTitle}</h2>
             <p>{t.readyNote}</p>
 
-            <details className="kvkk">
-              <summary>{t.kvkkTitle}</summary>
-              <dl className="kvkk__body">
-                {t.kvkkBody(CONFIG.email).map(([term, text]) => (
-                  <div key={term}>
-                    <dt>{term}</dt>
-                    <dd>{text}</dd>
-                  </div>
-                ))}
-              </dl>
-            </details>
-            <label className="consent">
-              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
-                aria-describedby={consent ? undefined : 'kvkk-required'} />
-              <span>{t.kvkkConsent}</span>
-            </label>
-            {!consent && <p id="kvkk-required" className="consent__hint">{t.kvkkRequired}</p>}
+            <KvkkConsent checked={consent} onChange={setConsent} />
 
-            <button type="button" className="stamp stamp--wide" disabled={!consent} onClick={() => send('whatsapp')}>{t.sendWhatsapp}</button>
-            <button type="button" className="ghost ghost--wide" disabled={!consent} onClick={() => send('email')}>{t.sendEmail}</button>
+            <button type="button" className="stamp stamp--wide" disabled={!consent || sent} onClick={() => send('whatsapp')}>{t.sendWhatsapp}</button>
+            <button type="button" className="ghost ghost--wide" disabled={!consent || sent} onClick={() => send('email')}>{t.sendEmail}</button>
             {sent && (
               <>
                 <p className="pencil-note" role="status">{t.sentNote}</p>

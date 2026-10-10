@@ -96,4 +96,6 @@ Done means: both `tr` and `en` render, it looks right at 375 px, and `npm run li
 2. Values are the stored option values (e.g. `"wall-panel"`), not translated labels; the readable version is already in `text`.
 3. A new request type adds a new `kind`, a row in the table above, and a call to `sendRequest`, in that order.
 4. The webhook call stays fire-and-forget: a failed POST is swallowed so the WhatsApp/email hand-off always happens.
-5. The webhook URL lives only in `CONFIG.n8nWebhook`; no secrets in the payload.
+5. The webhook URL lives only in `CONFIG.n8nWebhook`; no secrets in the payload. Adding it also means adding its origin to `connect-src` in `atolye-app/vercel.json`.
+6. Free text a visitor types goes through `cleanText` (`src/lib/sanitize.js`) with its `LIMITS` before it reaches `sendRequest`; choices are sent as their option `value`, never as typed text. A form that collects a name shows `KvkkConsent` and cannot send until it is ticked, and it sends only once.
+7. Whatever stores these requests (n8n, a database) must write with parameterised queries and escape on output; the client clean-up is defence in depth, not the SQL-injection fix.

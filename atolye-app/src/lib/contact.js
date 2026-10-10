@@ -5,7 +5,8 @@ const SAMPLE_WHATSAPP = '905000000000'
 export const CONFIG = {
   whatsapp: import.meta.env.VITE_WHATSAPP || SAMPLE_WHATSAPP, // international format, digits only
   email: 'atelier@example.com',
-  n8nWebhook: '', // later: your n8n webhook URL; when set, every request is also POSTed there
+  n8nWebhook: '', // later: your n8n webhook URL; when set, every request is also POSTed there.
+  // Also add its origin to connect-src in atolye-app/vercel.json, or the Content-Security-Policy blocks the POST.
 }
 
 export const isSampleWhatsapp = CONFIG.whatsapp === SAMPLE_WHATSAPP
