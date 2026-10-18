@@ -34,7 +34,7 @@ export async function forward(request, kind) {
 
   const payload = {
     kind, lang: body.lang, code: piece.code, product: piece.id, name, [rule.contact]: contact,
-    kvkkConsent: true, submittedAt: new Date().toISOString(),
+    kvkkConsent: true, source: body.source === 'mobile' ? 'mobile' : 'web', submittedAt: new Date().toISOString(),
   }
   try {
     const res = await fetch(url, {

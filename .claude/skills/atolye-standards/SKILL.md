@@ -93,6 +93,8 @@ Done means: both `tr` and `en` render, it looks right at 375 px, and `npm run li
 | `order` | `code`, `product` (piece id), `name`, `phone`, `kvkkConsent` |
 | `stock-alert` | `code`, `product` (piece id), `name`, `email`, `kvkkConsent` |
 
+`order` and `stock-alert` also carry `source`: `"mobile"` from the Expo app (`atolye-mobile/`), `"web"` otherwise.
+
 ### Order webhooks (`order`, `stock-alert`)
 
 These two do not go through `sendRequest`. `OrderSheet` calls `postForm('/api/order' | '/api/stock-alert', payload)`, which posts JSON to our own Vercel Functions (`atolye-app/api/`). `api/_forward.js` rebuilds the payload on the server (known piece id, cleaned name, valid phone/email, `kvkkConsent === true`, in stock for `order` and sold out for `stock-alert`), adds `submittedAt` and forwards it to `ORDER_WEBHOOK_URL` / `STOCK_WEBHOOK_URL`. Those are **server-only** env vars: never give them a `VITE_` prefix, which would bake them into the browser bundle. Locally they live in `.env.development.local` (the Vite dev server runs `api/*.js` through the `apiInDev` plugin in `vite.config.js`); on Vercel they are set per environment (Production: its own webhook; Preview and Development: the development one). The sheet shows its confirmation only when the function answers 200, which it does only after the webhook accepts the request. Responses are 422 for an invalid form, 502 when the webhook fails and 503 when its URL is not set.
