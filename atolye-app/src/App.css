@@ -122,6 +122,8 @@
 .tile__hook { margin-top: .9rem; font-size: 1.1rem; line-height: 1.5; }
 .tile__story { margin-top: .9rem; }
 .tile__actions { display: flex; align-items: center; gap: 16px; margin-top: 1.5rem; }
+.tile__stock { margin-top: .35rem; font: 600 .72rem/1.4 var(--text); letter-spacing: .2em; text-transform: uppercase; color: var(--graphite); }
+.tile__stock--out { color: var(--clay-ink); }
 .tile__compact-price { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .heart {
@@ -343,5 +345,9 @@
 .sheet__title { font: 400 1.7rem/1.1 var(--display); }
 .sheet__note { color: var(--graphite); margin-bottom: 6px; }
 .sheet .text-button { justify-self: center; }
+.sheet__panel--form { max-height: 92%; overflow-y: auto; }
+.order-form, .order-done { display: grid; gap: 10px; }
+.order-form .field { margin-top: 0; }
+.order-form .kvkk-consent { margin: 6px 0; }
 @keyframes rise { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }

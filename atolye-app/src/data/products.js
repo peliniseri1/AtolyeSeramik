@@ -2,6 +2,7 @@
 // replace them with the real details before launch.
 // Each piece lists its photographs in order: images[0] is the cover, the rest open in the card's gallery.
 // `src: null` marks a shot not yet taken; ProductImage shows the "photograph to come" frame for it.
+// `stock` is how many can be ordered now; 0 means sold out, and the card offers a restock notice instead.
 export const products = [
   {
     id: 'hasat',
@@ -27,6 +28,7 @@ export const products = [
       { label: { tr: 'Baskı', en: 'Edition' }, value: { tr: 'Tek eser', en: 'One of a kind' } },
     ],
     price: 6800,
+    stock: 1,
   },
   {
     id: 'ilkbahar',
@@ -50,6 +52,7 @@ export const products = [
       { label: { tr: 'Baskı', en: 'Edition' }, value: { tr: 'Yılda 12 numaralı takım', en: '12 numbered sets a year' } },
     ],
     price: 3900,
+    stock: 10,
   },
   {
     id: 'fener',
@@ -73,6 +76,7 @@ export const products = [
       { label: { tr: 'Baskı', en: 'Edition' }, value: { tr: '9 adet, numaralı', en: 'Edition of 9, numbered' } },
     ],
     price: 1650,
+    stock: 0,
   },
   {
     id: 'lale',
@@ -96,6 +100,7 @@ export const products = [
       { label: { tr: 'Baskı', en: 'Edition' }, value: { tr: '7 set, numaralı', en: 'Edition of 7, numbered' } },
     ],
     price: 2400,
+    stock: 7,
   },
 ]
 

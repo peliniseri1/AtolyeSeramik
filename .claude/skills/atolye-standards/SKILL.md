@@ -30,7 +30,7 @@ Applies to `atolye-app/` (Vite + React, phone format). The design rules live in 
 6. **Images go through `ProductImage`**, never a bare `<img>` for a piece. Pass `alt` in the current language and set `priority` only for the first image on screen; everything else is lazy. `src: null` is valid and shows the "Fotoğraf yakında" frame.
 7. **Semantic, keyboard-reachable markup**: `article`, `section`, `figure`, `dl` for specs, and `<button type="button">` for every action. A toggle has `aria-pressed`; an icon-only button has `aria-label`; a dialog has `role="dialog"`, `aria-modal` and closes on Escape.
 8. **Motion honours reduced motion**: scroll with `behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'`; CSS animations sit behind `@media (prefers-reduced-motion: no-preference)`.
-9. **The main action on a piece is `Sorun` / `Enquire`** and calls `openEnquiry(product)` from the store. A product view never adds a cart, a quantity or "buy now".
+9. **The main action on a piece is `Sorun` / `Enquire`** and calls `openEnquiry(product)` from the store. Beside it sits one quiet `text-button`: `Sipariş ver` (or `Stok bildirimi iste` when `stock === 0`), which calls `openOrder(product)` and opens `OrderSheet`. A product view never adds a cart, a quantity or "buy now".
 
 ### Product shape (`src/data/products.js`)
 
@@ -49,6 +49,7 @@ Every piece has all of these fields:
   story: { tr, en },           // museum-label paragraph with facts, not urgency
   specs: [{ label: { tr, en }, value: { tr, en } }],  // include size and edition
   price: 6800,                 // number in EUR; formatPrice() formats it
+  stock: 1,                    // how many can be ordered now; 0 = sold out. Keep it consistent with the edition in specs
 }
 ```
 
@@ -89,6 +90,12 @@ Done means: both `tr` and `en` render, it looks right at 375 px, and `npm run li
 | `enquiry` | `code` (piece code, e.g. `"H-01"`) |
 | `commission` | `code` (`"K-<n>"`), `piece`, `motif`, `mood`, `occasion`, `when`, `note`, `name`, `contact`, `kvkkConsent` (always `true`: the form cannot send without KVKK consent) |
 | `visit` | `slot`, `name` |
+| `order` | `code`, `product` (piece id), `name`, `phone`, `kvkkConsent` |
+| `stock-alert` | `code`, `product` (piece id), `name`, `email`, `kvkkConsent` |
+
+### Order webhooks (`order`, `stock-alert`)
+
+These two do not go through `sendRequest`: `OrderSheet` calls `postWebhook(url, payload)` with `CONFIG.orderWebhook` or `CONFIG.stockWebhook` (`VITE_ORDER_WEBHOOK` / `VITE_STOCK_WEBHOOK` in `.env.local`), and there is no WhatsApp/email hand-off and no `channel`, `subject` or `text`. `postWebhook` adds `submittedAt` and sends the JSON as `text/plain` with `mode: 'no-cors'`, so no CORS preflight is needed (webhook.site does not answer one). It resolves `true` once the request is delivered, and only then does the sheet show its confirmation; a network failure shows a retry message.
 
 ### Rules
 

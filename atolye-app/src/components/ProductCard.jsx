@@ -10,12 +10,13 @@ import { HeartIcon } from './Icons.jsx'
 // and the raw clay foot carries the pencil code, name, story, specs, price and actions.
 export default function ProductCard({ product, featured = false, compact = false }) {
   const { lang, t } = useLang()
-  const { favourites, toggleFavourite, openEnquiry } = useStore()
+  const { favourites, toggleFavourite, openEnquiry, openOrder } = useStore()
   const name = product.name.tr
   const isSaved = favourites.includes(product.id)
   const TitleTag = featured ? 'h1' : 'h2'
   const label = `${name} · ${product.kind[lang]}`
   const [cover] = product.images
+  const soldOut = product.stock === 0
 
   return (
     <article className={`tile glaze-${product.glaze}` + (featured ? ' tile--featured' : '') + (compact ? ' tile--compact' : '')}
@@ -42,6 +43,7 @@ export default function ProductCard({ product, featured = false, compact = false
           </button>
         </div>
         <p className="tile__kind">{product.kind[lang]}</p>
+        <p className={'tile__stock' + (soldOut ? ' tile__stock--out' : '')}>{t.stockLabel(product.stock)}</p>
 
         {featured && <p className="tile__hook">{t.hook}</p>}
 
@@ -69,6 +71,10 @@ export default function ProductCard({ product, featured = false, compact = false
           <button type="button" className="stamp" onClick={() => openEnquiry(product)}
             aria-label={t.enquireAbout(name)}>
             {t.enquire}
+          </button>
+          <button type="button" className="text-button" onClick={() => openOrder(product)}
+            aria-label={soldOut ? t.notifyAbout(name) : t.orderAbout(name)}>
+            {soldOut ? t.notify : t.order}
           </button>
           {compact && <span className="tile__compact-price">{formatPrice(product.price, lang)} <em className="sample">{t.sample}</em></span>}
         </div>

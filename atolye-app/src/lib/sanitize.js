@@ -20,5 +20,8 @@ export function cleanText(value, max, { multiline = false } = {}) {
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const PHONE = /^\+?[0-9][0-9 ()-]{6,19}$/
 
+export const isEmail = (value) => EMAIL.test(value)
+export const isPhone = (value) => PHONE.test(value)
+
 // a phone number or an email address, nothing else
-export const isContact = (value) => EMAIL.test(value) || PHONE.test(value)
+export const isContact = (value) => isEmail(value) || isPhone(value)

@@ -6,6 +6,7 @@ import { sendRequest } from './lib/contact.js'
 import AppBar from './components/AppBar.jsx'
 import TabBar from './components/TabBar.jsx'
 import EnquirySheet from './components/EnquirySheet.jsx'
+import OrderSheet from './components/OrderSheet.jsx'
 import CatalogueQR from './components/CatalogueQR.jsx'
 import CollectionScreen from './screens/CollectionScreen.jsx'
 import CommissionScreen from './screens/CommissionScreen.jsx'
@@ -24,6 +25,7 @@ export default function App() {
   const [favourites, setFavourites] = useStoredState('atolye-favourites', [])
   const [requests, setRequests] = useStoredState('atolye-requests', [])
   const [enquiry, setEnquiry] = useState(null)
+  const [order, setOrder] = useState(null)
   const t = strings[lang]
 
   useEffect(() => { document.documentElement.lang = lang }, [lang])
@@ -38,9 +40,11 @@ export default function App() {
     toggleFavourite: (id) => setFavourites((list) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id])),
     addRequest,
     openEnquiry: setEnquiry,
+    openOrder: setOrder,
   }), [favourites, requests, setFavourites, addRequest])
 
   const closeEnquiry = useCallback(() => setEnquiry(null), [])
+  const closeOrder = useCallback(() => setOrder(null), [])
 
   const sendEnquiry = (channel) => {
     const name = enquiry.name.tr
@@ -69,6 +73,8 @@ export default function App() {
             </main>
             <TabBar current={tab} onChange={setTab} badge={favourites.length} />
             <EnquirySheet product={enquiry} onSend={sendEnquiry} onClose={closeEnquiry} />
+            {/* keyed by piece: each order starts with an empty form */}
+            {order && <OrderSheet key={order.id} product={order} onClose={closeOrder} />}
           </div>
           <CatalogueQR aside />
         </div>
