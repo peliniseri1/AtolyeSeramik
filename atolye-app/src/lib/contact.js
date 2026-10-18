@@ -7,24 +7,18 @@ export const CONFIG = {
   email: 'pelinsibel2000@gmail.com',
   n8nWebhook: '', // later: your n8n webhook URL; when set, every request is also POSTed there.
   // Also add its origin to connect-src in atolye-app/vercel.json, or the Content-Security-Policy blocks the POST.
-  // The two order forms each post to their own webhook, set in .env.local (webhook.site for now, n8n later).
-  orderWebhook: import.meta.env.VITE_ORDER_WEBHOOK || '',
-  stockWebhook: import.meta.env.VITE_STOCK_WEBHOOK || '',
 }
 
-// Posts one form straight to a webhook and resolves true once it has been delivered, false otherwise.
-// Sent as text/plain with no-cors: a "simple" request needs no CORS preflight, which webhook.site does not answer.
-// The body is still JSON. The reply is opaque, so true means "reached the server", not "the server said 200".
-export async function postWebhook(url, payload) {
-  if (!url) return false
+// Posts one order form to our own server (api/order.js, api/stock-alert.js), which checks it and forwards it
+// to the webhook. The webhook URLs live only on the server; resolves true once the webhook has accepted it.
+export async function postForm(path, payload) {
   try {
-    await fetch(url, {
+    const res = await fetch(path, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-      body: JSON.stringify({ ...payload, submittedAt: new Date().toISOString() }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     })
-    return true
+    return res.ok
   } catch {
     return false
   }

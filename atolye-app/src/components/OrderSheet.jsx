@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
-import { CONFIG, postWebhook } from '../lib/contact.js'
+import { postForm } from '../lib/contact.js'
 import { LIMITS, cleanText, isEmail, isPhone } from '../lib/sanitize.js'
 import KvkkConsent from './KvkkConsent.jsx'
 
 // The order sheet: for a piece in stock it takes a name and phone ("Sipariş ver"),
-// for a sold-out piece a name and email ("Stok bildirimi iste"). Each posts to its own webhook.
+// for a sold-out piece a name and email ("Stok bildirimi iste"). Each goes to its own webhook, via our server.
 export default function OrderSheet({ product, onClose }) {
   const { lang, t } = useLang()
   const { addRequest } = useStore()
@@ -39,8 +39,8 @@ export default function OrderSheet({ product, onClose }) {
     const kind = soldOut ? 'stock-alert' : 'order'
     const base = { kind, lang, code: product.code, product: product.id, name: clean.name }
     const ok = soldOut
-      ? await postWebhook(CONFIG.stockWebhook, { ...base, email: clean.contact, kvkkConsent: true })
-      : await postWebhook(CONFIG.orderWebhook, { ...base, phone: clean.contact, kvkkConsent: true })
+      ? await postForm('/api/stock-alert', { ...base, email: clean.contact, kvkkConsent: true })
+      : await postForm('/api/order', { ...base, phone: clean.contact, kvkkConsent: true })
     if (!ok) return setStatus('failed')
     addRequest({ kind, title: `${product.code} · ${pieceName}`, glaze: product.glaze })
     setStatus('done')

@@ -95,7 +95,7 @@ Done means: both `tr` and `en` render, it looks right at 375 px, and `npm run li
 
 ### Order webhooks (`order`, `stock-alert`)
 
-These two do not go through `sendRequest`: `OrderSheet` calls `postWebhook(url, payload)` with `CONFIG.orderWebhook` or `CONFIG.stockWebhook` (`VITE_ORDER_WEBHOOK` / `VITE_STOCK_WEBHOOK` in `.env.local`), and there is no WhatsApp/email hand-off and no `channel`, `subject` or `text`. `postWebhook` adds `submittedAt` and sends the JSON as `text/plain` with `mode: 'no-cors'`, so no CORS preflight is needed (webhook.site does not answer one). It resolves `true` once the request is delivered, and only then does the sheet show its confirmation; a network failure shows a retry message.
+These two do not go through `sendRequest`. `OrderSheet` calls `postForm('/api/order' | '/api/stock-alert', payload)`, which posts JSON to our own Vercel Functions (`atolye-app/api/`). `api/_forward.js` rebuilds the payload on the server (known piece id, cleaned name, valid phone/email, `kvkkConsent === true`, in stock for `order` and sold out for `stock-alert`), adds `submittedAt` and forwards it to `ORDER_WEBHOOK_URL` / `STOCK_WEBHOOK_URL`. Those are **server-only** env vars: never give them a `VITE_` prefix, which would bake them into the browser bundle. Locally they live in `.env.development.local` (the Vite dev server runs `api/*.js` through the `apiInDev` plugin in `vite.config.js`); on Vercel they are set per environment (Production: its own webhook; Preview and Development: the development one). The sheet shows its confirmation only when the function answers 200, which it does only after the webhook accepts the request. Responses are 422 for an invalid form, 502 when the webhook fails and 503 when its URL is not set.
 
 ### Rules
 
@@ -103,6 +103,6 @@ These two do not go through `sendRequest`: `OrderSheet` calls `postWebhook(url, 
 2. Values are the stored option values (e.g. `"wall-panel"`), not translated labels; the readable version is already in `text`.
 3. A new request type adds a new `kind`, a row in the table above, and a call to `sendRequest`, in that order.
 4. The webhook call stays fire-and-forget: a failed POST is swallowed so the WhatsApp/email hand-off always happens.
-5. The webhook URL lives only in `CONFIG.n8nWebhook`; no secrets in the payload. Adding it also means adding its origin to `connect-src` in `atolye-app/vercel.json`.
+5. The n8n URL lives only in `CONFIG.n8nWebhook`, and the order webhooks only in server env vars; no secrets in the payload. Adding it also means adding its origin to `connect-src` in `atolye-app/vercel.json`.
 6. Free text a visitor types goes through `cleanText` (`src/lib/sanitize.js`) with its `LIMITS` before it reaches `sendRequest`; choices are sent as their option `value`, never as typed text. A form that collects a name shows `KvkkConsent` and cannot send until it is ticked, and it sends only once.
 7. Whatever stores these requests (n8n, a database) must write with parameterised queries and escape on output; the client clean-up is defence in depth, not the SQL-injection fix.
